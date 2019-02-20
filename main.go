@@ -10,25 +10,6 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-const (
-	unknown = 0
-	healthy = 1
-	timeout = 2
-	failed  = 3
-)
-
-type Host struct {
-	Endpoint string
-	Status   int
-}
-
-func CreateHost(endpoint string) *Host {
-	return &Host{
-		Endpoint: endpoint,
-		Status:   unknown,
-	}
-}
-
 var (
 	// debug   = kingpin.Flag("debug", "Enable debug mode.").Bool()
 	// timeout = kingpin.Flag("timeout", "Timeout waiting for monitoring.").Default("5s").OverrideDefaultFromEnvar("PING_TIMEOUT").Short('t').Duration()
@@ -110,20 +91,6 @@ func main() {
 /* addEndpoint creates a host and appends it's data to the endpoints file
  */
 func addEndpoint(endpoint string) bool {
-	// hostPath := getConfigDirectory() + "/hosts.txt"
-	// f, err := os.OpenFile(hostPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0700)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return false
-	// }
-	// defer f.Close()
-	// if _, err = f.WriteString(endpoint + "\n"); err != nil {
-	// 	fmt.Println(err)
-	// 	fmt.Println("Unable to append host to datastore")
-	// 	return false
-	// }
-	// fmt.Println("Addition successful")
-	// return true
 	hosts := retrieveHosts()
 	if hosts == nil {
 		fmt.Println("Unable to remove endpoint")
@@ -151,18 +118,5 @@ func removeEndpoint(endpoint string) bool {
 		hosts = append(hosts[:hostIndex], hosts[hostIndex+1:]...)
 	}
 	overwriteHosts(hosts)
-	// hostPath := getConfigDirectory() + "/hosts.txt"
-	// endpoints, err := ioutil.ReadFile(hostPath)
-	// if err != nil {
-	// 	fmt.Println("Unable to open file")
-	// 	return false
-	// }
-	// updatedEndpoints := strings.Replace(string(endpoints), endpoint+"\n", "", -1)
-	// fmt.Println(updatedEndpoints)
-	// err = ioutil.WriteFile(hostPath, []byte(updatedEndpoints), 0700)
-	// if err != nil {
-	// 	fmt.Println("Unable to write file")
-	// 	return false
-	// }
 	return true
 }
