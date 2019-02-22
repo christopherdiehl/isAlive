@@ -1,2 +1,31 @@
 # isAlive
-isAlive is a simple monitoring cli application that sends an email if the specified endpoint returns a non okay status code.
+
+isAlive is a simple http monitoring cli application that sends an email if the specified endpoint returns a non okay status code.
+
+## Config
+
+Configuration files are stored in `/home/$USER/.cache/isalive`. Everything is stored in JSON for easy manipulation.
+
+## Usage
+
+```
+usage: isalive [<flags>] <command> [<args> ...]
+
+A command-line monitoring application.
+
+Flags:
+  --help  Show context-sensitive help (also try --help-long and --help-man).
+
+Commands:
+  help [<command>...]
+    Show help.
+
+  add <endpoint>
+    Add a new endpoint to monitoring.
+
+  remove <endpoint>
+    Add a new endpoint to monitoring.
+
+  scan [<alert>]
+    Scans the stored hosts
+```
