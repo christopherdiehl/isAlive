@@ -81,9 +81,6 @@ func main() {
 // addEndpoint creates a host and appends it's data to the endpoints file
 func addEndpoint(endpoint string) bool {
 	hosts := retrieveHosts()
-	if hosts == nil {
-		fmt.Println("Unable to remove endpoint")
-	}
 	host := CreateHost(endpoint)
 	hosts = append(hosts, host)
 	overwriteHosts(hosts)
@@ -93,9 +90,6 @@ func addEndpoint(endpoint string) bool {
 // removeEndpoint removes the host from the string file
 func removeEndpoint(endpoint string) bool {
 	hosts := retrieveHosts()
-	if hosts == nil {
-		fmt.Println("Unable to remove endpoint")
-	}
 	hostIndex := -1
 	//find location of host
 	for i, host := range hosts {
@@ -157,12 +151,12 @@ type EmailCredentials struct {
 	ToAddress   string // email to send alerts to
 }
 
+// GetEmailCredentials returns stored credentials in the config file
 func GetEmailCredentials() *EmailCredentials {
 	var credentials *EmailCredentials
-	path := getConfigDirectory() + "email.json"
+	path := getConfigDirectory() + "/email.json"
 	fileContents, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("Unable to open credential file")
 		return nil
 	}
 	err = json.Unmarshal([]byte(fileContents), &credentials)
@@ -171,16 +165,19 @@ func GetEmailCredentials() *EmailCredentials {
 	}
 	return credentials
 }
+
+// SetEmailCredentials stores the credentials in the config file
 func SetEmailCredentials(credentials *EmailCredentials) bool {
 	path := getConfigDirectory() + "/email.json"
 	credentialsJSON, err := json.Marshal(credentials)
 	if err != nil {
-		fmt.Println("Unable to open credential file")
 		return false
 	}
 	err = ioutil.WriteFile(path, credentialsJSON, 0700)
 	return true
 }
+
+// CreateEmail is used to setup the emailBody for future usage
 func CreateEmail() *EmailHandler {
 	credentials := GetEmailCredentials()
 	if credentials == nil {
@@ -196,10 +193,10 @@ func CreateEmail() *EmailHandler {
 	}
 }
 
+// SendEmail sends email with specified defaults
 func (email *EmailHandler) SendEmail() bool {
-	if email.Status == "Sent" {
-		fmt.Println("Email already sent")
-		return true
+	if email == nil || email.Status == "Sent" {
+		return false
 	}
 	// TODO support more than gmail
 	err := smtp.SendMail("smtp.gmail.com:587",
@@ -214,17 +211,22 @@ func (email *EmailHandler) SendEmail() bool {
 	return true
 }
 
+// AppendFailedEndpoint adds endpoint to email Body
 func (email *EmailHandler) AppendFailedEndpoint(host *Host) bool {
+	if email == nil || host == nil {
+		return false
+	}
 	email.Body = email.Body + host.Endpoint + "," + string(host.Status) + "\r\n"
 	return true
 }
 
-/* Host Information*/
+/*Host Information*/
 type Host struct {
 	Endpoint string
 	Status   int // see https://golang.org/src/net/http/status.go
 }
 
+//CreateHost returns pointer to Host struct and prepends https:// if invalid prefix supplied
 func CreateHost(endpoint string) *Host {
 	if !strings.HasPrefix(endpoint, "https://") && !strings.HasPrefix(endpoint, "http://") {
 		endpoint = "https://" + endpoint
@@ -235,6 +237,7 @@ func CreateHost(endpoint string) *Host {
 	}
 }
 
+//scanHost scans host, sets status, and returns host
 func scanHost(host *Host) *Host {
 	resp, err := http.Get(host.Endpoint)
 	if err != nil {
@@ -252,7 +255,6 @@ func retrieveHosts() []*Host {
 	hostPath := getConfigDirectory() + "/hosts.json"
 	fileContents, err := ioutil.ReadFile(hostPath)
 	if err != nil {
-		fmt.Println("Unable to open file")
 		return nil
 	}
 	err = json.Unmarshal([]byte(fileContents), &hosts)
@@ -266,12 +268,12 @@ func retrieveHosts() []*Host {
 // TODO: test concurrent async calls to the cli could result in faulty data.
 func overwriteHosts(hosts []*Host) bool {
 	hostPath := getConfigDirectory() + "/hosts.json"
-	hostsJson, err := json.Marshal(hosts)
+	hostsJSON, err := json.Marshal(hosts)
 	if err != nil {
 		fmt.Println("Unable to marshal json")
 		return false
 	}
-	err = ioutil.WriteFile(hostPath, hostsJson, 0700)
+	err = ioutil.WriteFile(hostPath, hostsJSON, 0700)
 	if err != nil {
 		fmt.Println("Unable to write file")
 		return false
