@@ -29,3 +29,12 @@ Commands:
   scan [<alert>]
     Scans the stored hosts
 ```
+
+## Cron
+
+To run this command via cron job for more consistent monitoring and notifications, I suggest the following.
+```
+go install && go build && cp isAlive /usr/local/bin/isalive && chmod +x /usr/local/bin/isalive
+crontab -e
+0 * * * * /usr/local/bin/isalive scan true //run job every hour
+```
