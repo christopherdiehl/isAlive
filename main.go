@@ -117,7 +117,7 @@ func scanHosts(sendAlert bool) bool {
 		wg.Add(1)
 		go func(host *Host) {
 			defer wg.Done()
-			scanHost(host)
+			host.scan()
 		}(host)
 	}
 	wg.Wait()
@@ -238,15 +238,15 @@ func CreateHost(endpoint string) *Host {
 }
 
 //scanHost scans host, sets status, and returns host
-func scanHost(host *Host) *Host {
+func (host *Host) scan() bool {
 	resp, err := http.Get(host.Endpoint)
 	if err != nil {
 		fmt.Println(err)
-		return host
+		return false
 	}
 	defer resp.Body.Close()
 	host.Status = resp.StatusCode
-	return host
+	return true
 }
 
 // retrieveHosts retrieves the host information from the config file and returns a slice of Host struct pointers
