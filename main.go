@@ -8,6 +8,7 @@ import (
 	"net/smtp"
 	"os"
 	"os/user"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -127,8 +128,8 @@ func scanHosts(sendAlert bool) bool {
 			emailHandler.AppendFailedEndpoint(host)
 		}
 	}
-	if sendAlert {
-		emailHandler.SendEmail()
+	if sendAlert && !emailHandler.SendEmail() {
+		fmt.Println("Failed to send email")
 	}
 	return true
 }
@@ -196,6 +197,7 @@ func CreateEmail() *EmailHandler {
 // SendEmail sends email with specified defaults
 func (email *EmailHandler) SendEmail() bool {
 	if email == nil || email.Status == "Sent" {
+		fmt.Println("Email or email status invalid")
 		return false
 	}
 	// TODO support more than gmail
@@ -216,7 +218,7 @@ func (email *EmailHandler) AppendFailedEndpoint(host *Host) bool {
 	if email == nil || host == nil {
 		return false
 	}
-	email.Body = email.Body + host.Endpoint + "," + string(host.Status) + "\r\n"
+	email.Body = email.Body + host.Endpoint + "," + strconv.Itoa(host.Status) + "\r\n"
 	return true
 }
 
